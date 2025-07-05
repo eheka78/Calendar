@@ -80,6 +80,7 @@ export default function Calendar_detail({ userId, selectedDate, changeMonth }) {
                         <AddSchedule
                             selectedDate={selectedDate}
                             onClose={() => setShowAddSchedule(false)}
+                            userId={userId}
                         />
                     )}
                 </div>
