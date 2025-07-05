@@ -1,16 +1,24 @@
-import React, { useEffect, useRef, useState } from "react";
 import "./Calendar.css";
 import Calendar_detail from "./Calendar_detail";
+
+import React, { useEffect, useRef, useState } from "react";
 
 export default function Calendar() {
     const calendarRef = useRef(null);
     const [selectedDate, setSelectedDate] = useState(null);
     let date = new Date();
     const today = new Date();
+    const [userId, setUserId] = useState('dodam');
+
 
     useEffect(() => {
         render();
-    }, []);
+    }, [userId]);
+
+    useEffect(() => {
+        setSelectedDate(today);
+    }, [])
+
 
     function render() {
         const container = calendarRef.current;
@@ -138,8 +146,15 @@ export default function Calendar() {
 
     return (
         <div>
+            <div style={{ marginBottom:"20px" }}>
+                userId: <input type="text"
+                               defaultValue="dodam"
+                               onChange={(e) => setUserId(e.target.value)}
+                        />
+            </div>
+
             <div ref={calendarRef}></div>
-            <Calendar_detail selectedDate={selectedDate} changeMonth={changeMonth}/>
+            <Calendar_detail userId={userId} selectedDate={selectedDate} changeMonth={changeMonth}/>
         </div>
     );
 }
