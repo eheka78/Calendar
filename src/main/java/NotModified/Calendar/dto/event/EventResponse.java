@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 public class EventResponse {
+    private Long id;
     private String title;
     private String color;
     private String memo;
@@ -22,6 +23,7 @@ public class EventResponse {
 
     public static EventResponse from(Event e) {
         return new EventResponse(
+                e.getId(),
                 e.getTitle(),
                 e.getColor(),
                 e.getMemo(),
@@ -34,9 +36,10 @@ public class EventResponse {
         );
     }
 
-    public EventResponse(String title, String color, String memo,
+    public EventResponse(Long id, String title, String color, String memo,
                          LocalDateTime startDateTime, LocalDateTime endDateTime,
                          String repeat, LocalDateTime repeatEndDateTime) {
+        this.id = id;
         this.title = title;
         this.color = color;
         this.memo = memo;
@@ -45,5 +48,4 @@ public class EventResponse {
         this.repeat = repeat;
         this.repeatEndDateTime = repeatEndDateTime;
     }
-
 }
