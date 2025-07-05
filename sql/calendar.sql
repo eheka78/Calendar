@@ -18,7 +18,7 @@ CREATE TABLE event (
     memo varchar(255),
     start_date DATE not null,
     start_time TIME,
-    end_date DATE,
+    end_date DATE not null,
     end_time TIME,
     repeat varchar(10) default 'none',
     repeat_end_date DATE,
@@ -27,6 +27,12 @@ CREATE TABLE event (
 
 // none인 경우, 반복 x, none이 아닌 경우 반복 o ->
 // 보통 PK, FK의 이름은 동일하게
+// 1. 시작 날짜, 종료 날짜만 존재 -> 하루종일
+// 2. 시작 날짜, 시작 시간, 종료 날짜, 종료 시간 존재
+   // -> if) 시작 시간 > 종료 시간 : 안되게 막기
+   // -> if) 시작 시간 == 종료 시간 : 시간 존재하는 일정(범위는 x, ex) 5시에 뭐 하기)
+   // -> if) 시작 시간 < 종료 시간 : 시간 범위가 존재하는 일정(ex) 5시부터 6시까지 뭐 하기)
+
 // 1. 시작 날짜 : single-day-event, 시간 없음 (하루 종일)
 // 2. 시작 날짜, 시작 시간 : single-day-event, 시간 존재
 // 3. 시작 날짜, 종료 날짜 : multi-day-event, 시간 없음
