@@ -13,7 +13,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("select e from Event e " +
             "where e.userId = :userId " +
-            "and e.repeat <> 'none'")
+            "and e.repeat <> 'none' " +
+            "order by case when e.startDate <> e.endDate then 0 else 1 end, e.startDate")
     List<Event> findRepeatEvents(@Param("userId") String userId);
 
     // 단일 일정 중에서 특정 날짜를 포함하는 일정
@@ -22,7 +23,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "where e.userId = :userId " +
             "and e.repeat = 'none' " +
             "and e.startDate <= :targetDate " +
-            "and e.endDate >= :targetDate")
+            "and e.endDate >= :targetDate " +
+            "order by case when e.startDate <> e.endDate then 0 else 1 end, e.startDate")
     List<Event> findSingleEventsByDate(@Param("userId") String userId,
                                        @Param("targetDate") LocalDate targetDate);
 
@@ -31,7 +33,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "where e.userId = :userId " +
             "and e.repeat = 'none' " +
             "and function('year', e.startDate) = :year " +
-            "and function('month', e.startDate) = :month")
+            "and function('month', e.startDate) = :month " +
+            "order by case when e.startDate <> e.endDate then 0 else 1 end, e.startDate")
     List<Event> findSingleEventsByYearAndMonth(@Param("userId") String userId,
                                                @Param("year") Long year,
                                                @Param("month") Long month);
