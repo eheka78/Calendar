@@ -229,9 +229,7 @@ export default function EditSchedule({ selectedDate, onClose, userId, editEvent 
                 repeatEndTime: formatTime(eventRepeatEndDateTime),
             };
 
-            const response = await axios.put('/api/calendar/' + id, {
-                id, payload
-            });
+            const response = await axios.put('/api/calendar/' + id, payload);
 
             onClose(true);
             if(response.data.success){
