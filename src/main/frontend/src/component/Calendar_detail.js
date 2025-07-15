@@ -1,48 +1,82 @@
 import "./Calendar_detail.css";
 import AddSchedule from "./Add_schedule"; // add_schedule.js 컴포넌트 import
+import EditSchedule from "./Edit_schedule"; // add_schedule.js 컴포넌트 import
 
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 
-export default function Calendar_detail({ userId, selectedDate, changeMonth }) {
+export default function Calendar_detail({ userId, selectedDate, changeMonth, fetchEvent }) {
     const [showAddSchedule, setShowAddSchedule] = useState(false); // 상태 추가
-    const [event, setEvent] = useState([]);
+    const [showEditSchedule, setShowEditSchedule] = useState(false); // 상태 추가
+    const [selectedDateEvents, setSelectedDateEvents] = useState([]);
+    const [editEvent, setEditEvent] = useState('');
 
-    const fetchEvent = async () => {
-        console.log(userId + " " + selectedDate?.getFullYear() + " " + (selectedDate?.getMonth() + 1));
+
+    const formatDate = (date) =>
+            date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : null;
+
+    const fetchOneDayEventDetail = async () => {
+        if (!selectedDate) return;
+
         try {
-            const response = await axios.get('/api/calendar/' + userId, {
+            const response = await axios.get('/api/calendar/event/' + userId, {
                 params: {
                     userId,
-                    year: selectedDate?.getFullYear(),
-                    month: selectedDate?.getMonth() + 1
+                    date: formatDate(selectedDate)
                 }
             });
-            setEvent(response.data);
+
             console.log(response.data);
+            setSelectedDateEvents(response.data);
         } catch (e) {
             console.error("fail fetch: ", e);
         }
     };
 
-    useEffect(() => {
-        if (selectedDate) {
+    const deleteEvent = async (eventId) => {
+        if (!selectedDate) return;
+
+        try {
+            const response = await axios.delete('/api/calendar/' + eventId);
+
+            alert(response.message);
+
+            fetchOneDayEventDetail();
             fetchEvent();
+        } catch (e) {
+            console.error("fail fetch: ", e);
         }
-    }, [selectedDate]);
+    };
+
+    function formatDateTime(dateStr) {
+        const date = new Date(dateStr);
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+
+        return `${y}-${m}-${d} ${h}:${min}`;
+    }
+
+    useEffect (() => {
+        fetchOneDayEventDetail();
+        fetchEvent();
+    }, [selectedDate, showAddSchedule, showEditSchedule]);
 
 
     return (
-        <div className="calendar-day-detail">
-            {!selectedDate ? (
-                <div>error: 날짜 미정</div>
-            ) : (
+        <div>
+        {!selectedDate ? (
+            <div></div>
+        ) : (
+            <div className="calendar-day-detail">
                 <div style={{ width: "90%", margin: "auto" }}>
-                    <h3 style={{ float: "left" }}>
+                    <h3 style={{ float: "left", margin: "10px 0px"  }}>
                         {selectedDate.getFullYear()} - {selectedDate.getMonth() + 1} - {selectedDate.getDate()}
                     </h3>
                     <p
-                        style={{ float: "right", verticalAlign: "middle" }}
+                        style={{ float: "right", verticalAlign: "middle", margin: "10px 0px" }}
                         onClick={() => changeMonth(0)}
                     >
                         X
@@ -50,22 +84,42 @@ export default function Calendar_detail({ userId, selectedDate, changeMonth }) {
 
                     <div style={{ clear: "both" }} />
 
-                    <hr />
+                    <hr style={{margin: "0 0 15px 0px"}} />
 
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "20px 2fr 6fr 20px",
-                            gap: "5px",
-                            textAlign: "left",
-                        }}
-                    >
-                        <div className="item" style={{ width: "20px", height: "60px", backgroundColor: "blue" }}></div>
-                        <div className="item" style={{ fontWeight: "bold" }}>야구 직관 width 도도</div>
-                        <div className="item" style={{ color: "gray" }}>17:00 ~ 21:00</div>
-                        <div className="item" style={{ color: "gray" }}>...</div>
-                        <div className="item" style={{ color: "gray" }}>도도랑 야구 직관~~~ 오랜만임.</div>
+                    <div className="calendar-day-detail-group">
+                    {selectedDateEvents.map((e) => (
+                        <div key={e.id}
+                             style={{ display: "grid",
+                                      gridTemplateColumns: "20px 2fr 6fr 20px",
+                                      gap: "5px",
+                                      textAlign: "left",
+                                      marginBottom: "10px", // 구분용
+                             }}
+                        >
+                            <div className="item"
+                                 style={{ width: "20px",
+                                          height: "60px",
+                                          backgroundColor: e.color
+                                 }}
+                            >
+                            </div>
+                            <div className="item" style={{ fontWeight: "bold" }}>{e.title}</div>
+                            <div className="item" style={{ color: "gray" }}>{formatDateTime(e.startDateTime)} ~ {formatDateTime(e.endDateTime)}</div>
+                            <div className="item setting-wrapper" style={{ color: "gray" }}>
+                                <span>...</span>
+                                <ul className="setting">
+                                    <li onClick={() => { setShowEditSchedule(true);
+                                                         setEditEvent(e);
+                                    }}>edit</li>
+                                    <li onClick={() => deleteEvent(e.id)}>delete</li>
+                                </ul>
+                            </div>
+
+                            <div className="item" style={{ color: "gray" }}>{e.memo}</div>
+                        </div>
+                    ))}
                     </div>
+
 
                     <div
                         style={{ float: "right", fontSize: "30px", cursor: "pointer" }}
@@ -77,14 +131,26 @@ export default function Calendar_detail({ userId, selectedDate, changeMonth }) {
 
                     {/* 조건부 렌더링 */}
                     {showAddSchedule && (
-                        <AddSchedule
+                        <AddSchedule selectedDate={selectedDate}
+                                     onClose={() => setShowAddSchedule(false)}
+                                     userId={userId}
+                        />
+                    )}
+
+
+                    {/* 조건부 렌더링 */}
+                    {showEditSchedule && (
+                        <EditSchedule
                             selectedDate={selectedDate}
-                            onClose={() => setShowAddSchedule(false)}
+                            onClose={() => setShowEditSchedule(false)}
                             userId={userId}
+                            editEvent={editEvent}
                         />
                     )}
                 </div>
-            )}
+
+            </div>
+        )}
         </div>
     );
 }
