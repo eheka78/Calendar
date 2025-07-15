@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
 
+    // 이게 계속 반복 호출
     @Query("select e from Event e " +
             "where e.userId = :userId " +
             "and e.repeat <> 'none' " +
