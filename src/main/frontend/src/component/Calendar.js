@@ -7,16 +7,19 @@ import axios from "axios";
 
 export default function Calendar() {
     const calendarRef = useRef(null);
-    const [selectedDate, setSelectedDate] = useState(null);
-    let date = new Date();
-    const today = new Date();
+    const [selectedDate, setSelectedDate] = useState(null);  // Calendar_detail 의 날짜
+    let date = new Date();     // 달력에 표시 되는 날짜
+    const today = new Date();  // 오늘 날짜
     const [userId, setUserId] = useState('dodam');
     const [event, setEvent] = useState([]);
 
 
+    // 달력의 한 달 일정을 fetch
     const fetchEvent = async () => {
         // console.log(userId + " " + selectedDate?.getFullYear() + " " + (selectedDate?.getMonth() + 1));
         if(!selectedDate) return;
+        if(!userId) return;
+
         try {
             const response = await axios.get('/api/calendar/' + userId, {
                 params: {
@@ -36,21 +39,11 @@ export default function Calendar() {
         if (selectedDate) {
             fetchEvent();
         }
-    }, [date])
-
-    useEffect(() => {
-        if (selectedDate) {
-            fetchEvent();
-        }
     }, [selectedDate]);
 
     useEffect(() => {
         render();
-    }, [userId]);
-
-    useEffect(() => {
-        render();
-    }, [event]);
+    }, [userId, event]);
 
     useEffect(() => {
         setSelectedDate(today);
